@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stock-Sync Web</title>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Estilos personalizados -->
+  <style>
+  body {
+    background-color: #fff !important;
+    background-image: none !important;
+    color: #000 !important;
+    font-family: Arial, sans-serif;
+  }
+
+  .card {
+    background-color: #fff !important;
+    border: 1px solid #000;
+    box-shadow: none !important;
+  }
+
+  .view, .admin-tab { display: none; }
+  .view.active, .admin-tab.active { display: block; }
+
+  input, select, button {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
+  button:hover {
+    background-color: #eee !important;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-success,
+  .btn-danger,
+  .btn-dark,
+  .btn-outline-primary,
+  .btn-outline-secondary {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  .nav-tabs .nav-link {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: #eee !important;
+    font-weight: bold;
+  }
+
+  .table th, .table td {
+    border: 1px solid #000 !important;
+    color: #000 !important;
+    background-color: #fff !important;
+  }
+
+  .pointer {
+    cursor: pointer;
+    color: #000 !important;
+  }
+
+  .text-login,
+  .text-stock,
+  .text-info,
+  .text-dark,
+  .text-success,
+  .text-primary {
+    color: #000 !important;
+  }
+</style>
+</head>
+
+<body class="p-4">
+  <div class="container">
+
+    <!-- LOGIN VIEW -->
+    <div id="viewLogin" class="view active">
+      <div class="card mx-auto p-4" style="max-width:360px">
+        <h3 class="text-center text-login mb-3">Stock-Sync</h3>
+        <input id="loginUser" class="form-control mb-2" placeholder="Usuario" />
+        <input
+          id="loginPass"
+          type="password"
+          class="form-control mb-2"
+          placeholder="Contraseña"
+        />
+        <div class="d-flex justify-content-center gap-2 mb-2">
+          <button id="btnLogin" class="btn btn-primary">Iniciar Sesión</button>
+          <button id="btnShowRegister" class="btn btn-success">Registrarse</button>
+        </div>
+        <button id="btnShowCatalog" class="btn btn-outline-primary w-100 mb-2">
+          Ver Catálogo
+        </button>
+        <div class="text-end">
+          <span id="btnForgot" class="pointer text-info">
+            ¿Olvidaste tu contraseña?
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER VIEW -->
+    <div id="viewRegister" class="view">
+      <div class="card mx-auto p-4" style="max-width:400px">
+        <h4 class="mb-3">Registro de Usuario</h4>
+        <input id="regNombres" class="form-control mb-2" placeholder="Nombres" />
+        <input id="regApellidos" class="form-control mb-2" placeholder="Apellidos" />
+        <input id="regCedula" class="form-control mb-2" placeholder="Cédula" />
+        <label for="regFecha" class="form-label">Fecha de Nacimiento</label>
+        <input id="regFecha" type="date" class="form-control mb-2" />
+        <input
+          id="regEmail"
+          type="email"
+          class="form-control mb-2"
+          placeholder="Correo Electrónico"
+        />
+        <input
+          id="regUser"
+          class="form-control mb-2"
+          placeholder="Nombre de Usuario"
+        />
+        <input
+          id="regPass"
+          type="password"
+          class="form-control mb-2"
+          placeholder="Contraseña"
+        />
+        <select id="regRole" class="form-select mb-3">
+          <option value="cliente">Cliente</option>
+          <option value="admin">Administrador</option>
+        </select>
+        <div class="d-flex justify-content-between">
+          <button id="btnRegister" class="btn btn-success">Registrar</button>
+          <button id="btnRegBack" class="btn btn-outline-secondary">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUBLIC CATALOG VIEW -->
+    <div id="viewCatalogPublic" class="view">
+      <div class="card p-4">
+        <h4 class="text-stock">Inventario Disponible</h4>
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <select id="filtroCatPublic" class="form-select"></select>
+          </div>
+          <div class="col">
+            <input
+              id="filtroTxtPublic"
+              class="form-control"
+              placeholder="Buscar..."
+            />
+          </div>
+        </div>
+        <div class="table-responsive" style="max-height:300px;overflow:auto">
+          <table class="table table-bordered table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoria</th>
+                <th style="width:60px; text-align:center;">Stock</th>
+                <th style="width:120px;">Precio Unidad</th>
+              </tr>
+            </thead>
+            <tbody id="tblCatalogPublic"></tbody>
+          </table>
+        </div>
+        <div class="text-end mt-3">
+          <button id="btnBackToLogin" class="btn btn-outline-secondary">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENT VIEW -->
+    <div id="viewClient" class="view">
+      <div class="card p-4">
+      <th><h4 class="text-dark">Catálogo de Productos</h4></th>
+      <div class="row g-2 mb-3">
+        <div class="col">
+        <select id="filtroCat" class="form-select"></select>
+        </div>
+        <div class="col">
+        <input
+          id="filtroTxt"
+          class="form-control"
+          placeholder="Buscar..."
+        />
+        </div>
+      </div>
+      <div class="table-responsive" style="max-height:300px;overflow:auto">
+        <table class="table table-bordered table-sm mb-0">
+        <thead class="table-light">
+          <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Categoria</th>
+          <th>Stock</th>
+          <th style="width:60px;">Cantidad</th>
+          <th style="width:120px;">Precio Unidad</th>
+          
+
+          </tr>
+        </thead>
+        <tbody id="tblClient"></tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <strong style="font-size:1.3em;">
+        <span style="color:#000;">Total:$</span>
+        <span id="totalLbl" style="color:#222;">0 COP</span>
+        </strong>
+        <div>
+        <button id="btnPay" class="btn btn-success me-2">Pagar</button>
+        <button id="btnLogout" class="btn btn-danger">
+          Cerrar Sesión
+        </button>
+        </div>
+      </div>
+      </div>
+    </div>
+    <script>
+      // Este script elimina el cero al hacer click o escribir en el input de cantidad
+      function attachQtyInputZeroRemover() {
+        document.querySelectorAll('.qty-input').forEach(input => {
+          input.addEventListener('focus', function() {
+            if (input.value === '0' || input.value === 0) input.value = '';
+          });
+          input.addEventListener('input', function() {
+            if (input.value === '0' || input.value === 0) input.value = '';
+          });
+        });
+      }
+      // Llama a la función después de renderizar la tabla de cliente
+      const origRenderClient = window.renderClient;
+      window.renderClient = function() {
+      origRenderClient();
+      attachQtyInputZeroRemover();
+      };
+    </script>
+
+    <!-- ADMIN VIEW -->
+    <div id="viewAdmin" class="view">
+      <div class="card p-4">
+        <h4 class="mb-3">Panel Administrador</h4>
+        <ul class="nav nav-tabs mb-3" id="adminTabs">
+          <li class="nav-item">
+            <button class="nav-link active" data-tab="invTab">Inventario</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-tab="addTab">Agregar</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-tab="delTab">Eliminar</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-tab="provTab">Proveedores</button>
+          </li>
+        </ul>
+
+        <!-- Inventario -->
+        <div id="invTab" class="admin-tab active">
+          <h5>Inventario</h5>
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <select id="filtroCatAdmin" class="form-select"></select>
+            </div>
+            <div class="col">
+              <input
+                id="filtroTxtAdmin"
+                class="form-control"
+                placeholder="Buscar..."
+              />
+            </div>
+          </div>
+          <div class="table-responsive" style="max-height:250px;overflow:auto">
+            <table class="table table-bordered table-sm mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Categoria</th>
+                   <th style="width:60px; text-align:center;">Stock</th>
+                  <th style="width:120px;">Precio Unidad</th>
+                </tr>
+              </thead>
+              <tbody id="tblAdminInv"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Agregar -->
+        <div id="addTab" class="admin-tab">
+          <h5>Agregar Producto</h5>
+          <div class="row g-2 mb-3">
+            <input
+              id="addId"
+              class="form-control col"
+              placeholder="ID"
+            />
+            <input
+              id="addName"
+              class="form-control col"
+              placeholder="Nombre"
+            />
+            <input
+              id="addCat"
+              class="form-control col"
+              placeholder="Categoría"
+            />
+            <input
+              id="addQty"
+              type="number"
+              class="form-control col"
+              placeholder="Cantidad"
+            />
+            <input
+              id="addPrice"
+              type="number"
+              class="form-control col"
+              placeholder="Precio"
+            />
+            <button id="btnAddProd" class="btn btn-success col">Agregar</button>
+          </div>
+        </div>
+
+        <!-- Eliminar -->
+        <div id="delTab" class="admin-tab">
+          <h5>Eliminar Producto</h5>
+          <div class="row g-2 mb-3">
+            <input id="delId" class="form-control col" placeholder="ID" />
+            <button id="btnDelProd" class="btn btn-danger col">
+              Eliminar
+            </button>
+          </div>
+        </div>
+
+        <!-- Proveedores -->
+        <div id="provTab" class="admin-tab">
+          <h5>Proveedores</h5>
+          <div class="row g-2 mb-3">
+            <input
+              id="provName"
+              class="form-control col"
+              placeholder="Nombre Proveedor"
+            />
+            <input
+              id="provEmail"
+              class="form-control col"
+              placeholder="Email Proveedor"
+            />
+            <button id="btnAddProv" class="btn btn-success col">Agregar</button>
+          </div>
+          <ul id="lstProv" class="list-group"></ul>
+        </div>
+
+        <div class="text-end mt-3">
+          <button id="btnAdminBack" class="btn btn-danger">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="modalForgot" class="modal fade" tabindex="-1">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Recuperar contraseña</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input
+            id="forgotUser"
+            class="form-control"
+            placeholder="Usuario o email"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="btnSendForgot" class="btn btn-primary">Enviar</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cerrar
+          </button>
+        </div>
+      </div></div>
+    </div>
+
+    <div id="modalPay" class="modal fade" tabindex="-1">
+      <div class="modal-dialog">
+      <div class="modal-content p-4">
+        <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title text-primary w-100 text-center">Método de Pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body px-0 pt-3 pb-4">
+        <button id="payCard" class="btn btn-dark w-100 mb-2">Tarjeta</button>
+        <button id="payEfecty" class="btn btn-success w-100">Consignación en Efecty</button>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div id="modalConfirmacion" class="modal fade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content p-4 text-center">
+      <div class="modal-header border-0">
+        <h5 id="confirmTitle" class="modal-title w-100 text-success"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div id="confirmBody" class="modal-body fs-5"></div>
+    </div>
+  </div>
+</div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Lógica de la aplicación -->
+  <script type="module">
+    // Datos
+    const usuarios = [
+      { user: 'admin', pass: 'admin', role: 'admin' },
+      { user: 'cliente', pass: 'cliente', role: 'cliente' }
+    ];
+const productos = [
+  { id:'13', nombre:'Compás Metálico',              cantidad:15, precio:9000,  categoria:'Instrumentos de Dibujo' },
+  { id:'14', nombre:'Juego de Geometría',            cantidad:20, precio:12000, categoria:'Instrumentos de Dibujo' },
+  { id:'15', nombre:'Bolígrafos Azul x10',           cantidad:50, precio:7000,  categoria:'Papelería' },
+  { id:'16', nombre:'Bolígrafos Negro x10',          cantidad:45, precio:7000,  categoria:'Papelería' },
+  { id:'17', nombre:'Marcadores Permanentes',        cantidad:25, precio:15000, categoria:'Arte' },
+  { id:'18', nombre:'Témperas x12 colores',          cantidad:18, precio:18000, categoria:'Arte' },
+  { id:'19', nombre:'Cartulina Blanca',              cantidad:100, precio:500,  categoria:'Papelería' },
+  { id:'20', nombre:'Cartulina de Colores',          cantidad:80,  precio:700,  categoria:'Papelería' },
+  { id:'21', nombre:'Corrector Líquido',             cantidad:30,  precio:3500, categoria:'Útiles Escolares' },
+  { id:'22', nombre:'Sacapuntas Metálico',           cantidad:60,  precio:2500, categoria:'Útiles Escolares' },
+  { id:'23', nombre:'Caja de Clips',                 cantidad:40,  precio:4000, categoria:'Organización' },
+  { id:'24', nombre:'Archivador de Palanca',         cantidad:25,  precio:15000,categoria:'Organización' },
+  { id:'25', nombre:'Notas Adhesivas',               cantidad:70,  precio:3000, categoria:'Organización' },
+  { id:'26', nombre:'Cinta Adhesiva Transparente',   cantidad:50,  precio:3500, categoria:'Adhesivos' },
+  { id:'27', nombre:'Cinta Masking Tape',            cantidad:40,  precio:4000, categoria:'Adhesivos' },
+  { id:'28', nombre:'Caja de Grapas',                cantidad:60,  precio:2500, categoria:'Organización' },
+  { id:'29', nombre:'Grapadora Escolar',             cantidad:20,  precio:12000,categoria:'Herramientas' },
+  { id:'30', nombre:'Estuche Escolar',               cantidad:30,  precio:10000,categoria:'Útiles Escolares' }
+];
+const proveedores = [
+  { nombre:'Papelería Escolar S.A.',     email:'contacto@papeleriaescolar.com' },
+  { nombre:'Distribuidora Útil+',        email:'ventas@utilmas.com' },
+  { nombre:'Arte y Color',               email:'info@arteycolor.com' },
+  { nombre:'OfiExpress',                 email:'soporte@ofiexpress.com' },
+  { nombre:'Suministros Andes',          email:'ventas@suministrosandes.com' },
+  { nombre:'Papelería El Estudiante',    email:'contacto@elestudiante.com' },
+  { nombre:'MegaÚtiles',                 email:'ventas@megautiles.com' },
+  { nombre:'ColorArte',                  email:'info@colorarte.com' },
+  { nombre:'OfiCentro',                  email:'contacto@oficentro.com' },
+  { nombre:'Distribuciones Escolares',  email:'ventas@distribucionesescolares.com' }
+];
+    // Carrito
+    const carrito = [];
+
+    // Services
+    function validarUsuario(user, pass) {
+      const u = user.trim().toLowerCase(), p = pass.trim();
+      return usuarios.find(x => x.user.toLowerCase()===u && x.pass===p) || null;
+    }
+    function registrarUsuario(u) { usuarios.push(u); }
+    function getInventario() { return productos; }
+    function agregarProducto(p) { productos.push(p); }
+    function eliminarProducto(id) {
+      const i = productos.findIndex(p=>p.id===id);
+      if(i>=0) productos.splice(i,1);
+    }
+    function getProveedores() { return proveedores; }
+    function agregarProveedor(p) { proveedores.push(p); }
+
+    // Utils
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+    function filtroProductos(lista, txt, cat) {
+      txt = txt.toLowerCase().trim();
+      return lista.filter(p=>
+        (cat==='Todas'||p.categoria===cat) &&
+        (p.id.includes(txt)||p.nombre.toLowerCase().includes(txt))
+      );
+    }
+    function actualizarTotal() {
+      const total = carrito.reduce((s,c)=>s+c.precio,0);
+      document.getElementById('totalLbl').textContent =
+        total.toLocaleString('es-CO')+' COP';
+    }
+
+    // Views
+    function renderCatalogPublic() {
+      const lista = getInventario();
+      const cats  = ['Todas', ...new Set(lista.map(p=>p.categoria))];
+      document.getElementById('filtroCatPublic').innerHTML =
+        cats.map(c=>`<option>${c}</option>`).join('');
+      function update() {
+        const cat = document.getElementById('filtroCatPublic').value;
+        const txt = document.getElementById('filtroTxtPublic').value.trim();
+        document.getElementById('tblCatalogPublic').innerHTML =
+          filtroProductos(lista,txt,cat).map(p=>`
+            <tr>
+              <td>${p.id}</td><td>${p.nombre}</td>
+              <td>${p.categoria}</td><td style="text-align:center;">${p.cantidad}</td>
+              <td style="text-align:right;">${p.precio.toLocaleString('es-CO')}</td>
+            </tr>
+          `).join('');
+      }
+      document.getElementById('filtroCatPublic').onchange = update;
+      document.getElementById('filtroTxtPublic').oninput  = update;
+      update();
+    }
+
+    function renderClient() {
+      const lista = getInventario();
+      const cats  = ['Todas', ...new Set(lista.map(p=>p.categoria))];
+      document.getElementById('filtroCat').innerHTML =
+        cats.map(c=>`<option>${c}</option>`).join('');
+
+      function updateTable() {
+        const cat   = document.getElementById('filtroCat').value;
+        const txt   = document.getElementById('filtroTxt').value.trim().toLowerCase();
+        const tbody = document.getElementById('tblClient');
+        tbody.innerHTML = '';
+
+        filtroProductos(lista,txt,cat).forEach(p => {
+          const prev = carrito.find(i=>i.id===p.id);
+          const qty  = prev?prev.cantidad:0;
+          const tr   = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${p.id}</td>
+            <td>${p.nombre}</td>
+            <td>${p.categoria}</td>
+            <td style="text-align:center;">${p.cantidad}</td>
+            <td>
+              <input type="number" min="0"
+                     class="form-control form-control-sm qty-input"
+                     data-id="${p.id}" data-precio="${p.precio}"
+                     value="${qty > 0 ? qty : ''}"
+                     placeholder="0" />
+            </td>
+            <td style="text-align:right;">${p.precio.toLocaleString('es-CO')}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        attachListeners();
+        actualizarTotal();
+      }
+
+      function attachListeners() {
+        document.querySelectorAll('.qty-input').forEach(input => {
+          input.oninput = () => {
+            const id       = input.dataset.id;
+            const precioU  = +input.dataset.precio;
+            const cantidad = +input.value;
+            const idx      = carrito.findIndex(i=>i.id===id);
+            if(idx>-1) carrito.splice(idx,1);
+            if(cantidad>0) carrito.push({ id, cantidad, precio: precioU*cantidad });
+            actualizarTotal();
+          };
+        });
+      }
+
+      document.getElementById('filtroCat').onchange = updateTable;
+      document.getElementById('filtroTxt').oninput  = updateTable;
+      updateTable();
+    }
+
+    function renderAdmin() {
+      const lista = getInventario();
+      const cats  = ['Todas', ...new Set(lista.map(p=>p.categoria))];
+      document.getElementById('filtroCatAdmin').innerHTML =
+        cats.map(c=>`<option>${c}</option>`).join('');
+      function updateTable() {
+        const cat = document.getElementById('filtroCatAdmin').value;
+        const txt = document.getElementById('filtroTxtAdmin').value.trim();
+        document.getElementById('tblAdminInv').innerHTML =
+          filtroProductos(lista,txt,cat).map(p=>`
+            <tr>
+              <td>${p.id}</td><td>${p.nombre}</td>
+              <td>${p.categoria}</td><td style="text-align:center;">${p.cantidad}</td>
+              <td style="text-align:right;">${p.precio.toLocaleString('es-CO')}</td>
+            </tr>
+          `).join('');
+      }
+      document.getElementById('filtroCatAdmin').onchange = updateTable;
+      document.getElementById('filtroTxtAdmin').oninput  = updateTable;
+      updateTable();
+
+      // Proveedores
+      document.getElementById('lstProv').innerHTML =
+        getProveedores().map(pr=>`
+          <li class="list-group-item">${pr.nombre} – ${pr.email}</li>
+        `).join('');
+    }
+
+    // App init
+    window.addEventListener('DOMContentLoaded', () => {
+      showView('viewLogin');
+
+      // Login
+      document.getElementById('btnLogin').onclick = () => {
+        const u   = document.getElementById('loginUser').value;
+        const p   = document.getElementById('loginPass').value;
+        const usr = validarUsuario(u,p);
+        if(!usr) return alert('Usuario/clave inválidos');
+        if(usr.role==='admin') {
+        renderAdmin(); showView('viewAdmin');
+        document.getElementById('invTab').classList.add('active'); // Asegura que esté visible
+        } else {
+          renderClient(); showView('viewClient');
+        }
+      };
+
+      // Público
+      document.getElementById('btnShowCatalog').onclick = () => {
+        renderCatalogPublic(); showView('viewCatalogPublic');
+      };
+      document.getElementById('btnBackToLogin').onclick = () =>
+        showView('viewLogin');
+
+      // Registro
+      document.getElementById('btnShowRegister').onclick = () =>
+        showView('viewRegister');
+      document.getElementById('btnRegBack').onclick = () =>
+        showView('viewLogin');
+      document.getElementById('btnRegister').onclick = () => {
+        const nombres   = document.getElementById('regNombres').value.trim();
+        const apellidos = document.getElementById('regApellidos').value.trim();
+        const cedula    = document.getElementById('regCedula').value.trim();
+        const fecha     = document.getElementById('regFecha').value;
+        const email     = document.getElementById('regEmail').value.trim();
+        const user      = document.getElementById('regUser').value.trim();
+        const pass      = document.getElementById('regPass').value;
+        const role      = document.getElementById('regRole').value;
+        if (role === 'admin' && !email.toLowerCase().endsWith('@stocksync.com')) {
+  return alert('Los administradores deben registrarse con un correo @stocksync.com');
+      }
+        if (![nombres,apellidos,cedula,fecha,email,user,pass].every(v=>v))
+          return alert('Completa todos los campos');
+        if (validarUsuario(user,pass)) return alert('Usuario ya existe');
+        registrarUsuario({ user,pass,role,nombres,apellidos,cedula,fecha,email });
+        alert('Usuario registrado');
+        showView('viewLogin');
+      };
+
+      // Logout
+        document.getElementById('btnLogout').onclick = () => {
+        carrito.length = 0;
+        renderClient();
+        showView('viewLogin');
+      };
+      document.getElementById('btnAdminBack').onclick = () =>
+        showView('viewLogin');
+
+      // Modales
+      const mF = new bootstrap.Modal(document.getElementById('modalForgot'));
+      document.getElementById('btnForgot').onclick     = () => mF.show();
+      document.getElementById('btnSendForgot').onclick = () => {
+        alert('Instrucciones enviadas'); mF.hide();
+      };
+
+      const mP = new bootstrap.Modal(document.getElementById('modalPay'));
+      document.getElementById('btnPay').onclick    = () => mP.show();
+      document.getElementById('payCard').onclick = () => {
+       carrito.length = 0;
+      renderClient();
+      mP.hide();
+      new bootstrap.Modal(document.getElementById('modalTarjeta')).show();
+};
+
+      document.getElementById('payEfecty').onclick = () => {
+      carrito.length=0;
+      renderClient();
+      mP.hide();
+
+      const codigo = Math.floor(100000 + Math.random() * 900000); // Código de 6 dígitos
+
+      document.getElementById('confirmTitle').textContent = 'Consignación en Efecty seleccionada';
+      document.getElementById('confirmBody').innerHTML = `
+      <div>Guarde este código de consignación:</div>
+      <strong style="font-size:1.5em;">${codigo}</strong>
+      `;
+      new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
+    };
+
+      // Admin: Agregar/Eliminar/Proveedores
+      document.getElementById('btnAddProd').onclick = () => {
+        const prod = {
+          id:        document.getElementById('addId').value.trim(),
+          nombre:    document.getElementById('addName').value.trim(),
+          categoria: document.getElementById('addCat').value.trim(),
+          cantidad:  +document.getElementById('addQty').value,
+          precio:    +document.getElementById('addPrice').value
+        };
+        if (getInventario().some(p=>p.id===prod.id))
+          return alert('ID ya existe');
+        agregarProducto(prod);
+        renderAdmin(); alert('Producto agregado');
+      };
+      document.getElementById('btnDelProd').onclick = () => {
+        const id = document.getElementById('delId').value.trim();
+        eliminarProducto(id);
+        renderAdmin(); alert('Producto eliminado');
+      };
+      document.getElementById('btnAddProv').onclick = () => {
+        const nombre = document.getElementById('provName').value.trim();
+        const email  = document.getElementById('provEmail').value.trim();
+        if (!nombre||!email) return alert('Completa proveedor');
+        agregarProveedor({ nombre,email });
+        renderAdmin(); alert('Proveedor agregado');
+      };
+
+      // Pestañas admin
+      document.querySelectorAll('#adminTabs button').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('#adminTabs .nav-link')
+            .forEach(l=>l.classList.remove('active'));
+          document.querySelectorAll('.admin-tab')
+            .forEach(t=>t.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.tab).classList.add('active');
+          if (btn.dataset.tab==='invTab') renderAdmin();
+        };
+      });
+    });
+  </script>
+  <div id="modalTarjeta" class="modal fade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content p-4">
+      <div class="modal-header">
+        <h5 class="modal-title">Pago con Tarjeta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <select id="tipoTarjeta" class="form-select mb-2">
+          <option value="">Tipo de Tarjeta</option>
+          <option>Visa</option>
+          <option>Mastercard</option>
+          <option>American Express</option>
+          <option>Discover</option>
+           <option>Diners Club</option>
+        </select>
+        <input id="numTarjeta" type="text" class="form-control mb-2" placeholder="Número de tarjeta" maxlength="19" />
+        <input id="titularTarjeta" type="text" class="form-control mb-2" placeholder="Nombre del titular" />
+        <div class="row">
+          <div class="col">
+            <input id="expTarjeta" type="text" class="form-control mb-2" placeholder="MM/AA" maxlength="5" />
+          </div>
+          <div class="col">
+            <input id="cvvTarjeta" type="text" class="form-control mb-2" placeholder="CVV" maxlength="4" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnConfirmTarjeta" class="btn btn-success w-100">Confirmar Pago</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
